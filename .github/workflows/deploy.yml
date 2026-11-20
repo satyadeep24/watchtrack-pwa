@@ -21,8 +21,22 @@ jobs:
 
       - name: Extract project ZIP
         run: |
-          unzip -o watchtrack-pwa.zip
-          cp -a watchtrack/. .
+          mkdir -p project
+          unzip -o watchtrack-pwa.zip -d project
+
+          NESTED_ZIP=$(find project -type f -name "*.zip" -print -quit)
+          if [ -n "$NESTED_ZIP" ]; then
+            unzip -o "$NESTED_ZIP" -d project/unpacked
+          fi
+
+          PROJECT_DIR=$(find project -type f -name package.json -print -quit | xargs -r dirname)
+
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "ERROR: package.json not found"
+            exit 1
+          fi
+
+          cp -a "$PROJECT_DIR"/. .
 
       - name: Setup Node
         uses: actions/setup-node@v4
